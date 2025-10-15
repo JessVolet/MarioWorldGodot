@@ -29,6 +29,10 @@ window/frame_pacing/android/swappy_mode=1
 window/stretch/mode="viewport"
 window/stretch/scale=4.0
 
+[editor]
+
+movie_writer/disable_vsync=true
+
 [input]
 
 move_left={
