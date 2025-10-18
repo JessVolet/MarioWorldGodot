@@ -44,18 +44,12 @@ func _physics_process(delta) -> void:
 	handle_gravity(delta)
 func update_animations(direction):
 	
-	# Usamos p_meter_flag para saber el estado de run
 	var is_sprinting = p_meter_flag 
 	
-	# Restablecer la posición Y del sprite al inicio para evitar bugs,
-	# a menos que tu intención sea moverlo constantemente.
 	$AnimatedSprite2D.position.y = 0 
 	
-	# ------------------------------------
-	# ESTADO AÉREO (NO en el suelo)
-	# ------------------------------------
 	if not is_on_floor():
-		if velocity.y < 0: # Saltando (yendo hacia arriba)
+		if velocity.y < 0:
 			if is_sprinting:
 				$AnimatedSprite2D.play("jump_run")
 			else:
@@ -66,23 +60,17 @@ func update_animations(direction):
 			else:
 				$AnimatedSprite2D.play("fall")
 			
-	# ------------------------------------
-	# ESTADO EN TIERRA (En el suelo)
-	# ------------------------------------
 	else:
 		if velocity.x != 0: # Moviéndose horizontalmente
 			
-			# Lógica de Giro/Frenado: Si la entrada es opuesta a la velocidad, ejecuta "turn"
 			if direction * sign(velocity.x) == -1:
 				$AnimatedSprite2D.play("turn")
 			else:
-				# Si no está girando, ejecuta caminar/correr
 				if is_sprinting:
 					$AnimatedSprite2D.play("run")
 				else:
 					$AnimatedSprite2D.play("walk")
 					
-			# Lógica de velocidad de frame:
 			var frame_rates_by_speed: Array[float] = [6.0, 7.5, 10.0, 15.0, 20.0, 30.0 , 60.0, 60.0]
 			var index: int = int (abs(velocity.x) / 30)
 			index = min(index, 7)
@@ -94,7 +82,7 @@ func update_animations(direction):
 			
 		else: # Velocidad X es 0 (Parado)
 			$AnimatedSprite2D.play("idle")
-			$AnimatedSprite2D.position.y = 1 # Si quieres un offset en idle, se aplica aquí
+			$AnimatedSprite2D.position.y = 1
 
 
 
@@ -112,11 +100,9 @@ func handle_movement(delta):
 		p_meter = max(p_meter - delta, 0.0)
 
 	
-	# ACTIVATE: Flag is true ONLY when the P-Meter is exactly full.
 	if p_meter == max_p_meter:
 		p_meter_flag = true
 	
-	# DEACTIVATE: Flag turns false if the 'run' button is released, OR the P-Meter empties.
 	if not Input.is_action_pressed("run") or p_meter <= 0.0:
 		p_meter_flag = false
 		
@@ -172,15 +158,38 @@ func _jump_speed():
 		base_speed = base_spin_jump_speed
 		speed_incr = spin_jump_speed_incr
 	return -(base_speed + speed_incr * int (abs(velocity.x) /30))
+		
 
 func handle_jump():
 	jumping = false
 	spin_jumping = false
 	jumping_with_full_p_meter = false
+	func handle_jump():
+	jumping = false
+	spin_jumping = false
+	jumping_with_full_p_meter = false
+	
+	if p_meter > p_meter_starting_speed:
+		jumping_with_full_p_meter = true
 	
 	if Input.is_action_just_pressed("jump") and is_on_floor():
-		jumping = true
-		velocity.y = _jump_speed()
+		if jumping_with_full_p_meter == true:
+			jumping = true
+			velocity.y = _jump_speed() * 100.25
+		else:
+			jumping = true
+			velocity.y = _jump_speed()
+	if p_meter > p_meter_starting_speed:
+		jumping_with_full_p_meter = true
+	
+	if Input.is_action_just_pressed("jump") and is_on_floor():
+		if jumping_with_full_p_meter == true:
+			jumping = true
+			velocity.y = _jump_speed() * 100.25
+		else:
+			jumping = true
+			velocity.y = _jump_speed()
+		
 
 func handle_gravity(delta):
 	if not is_on_floor():
